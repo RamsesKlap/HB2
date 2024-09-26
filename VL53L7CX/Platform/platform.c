@@ -12,14 +12,48 @@
 
 #include "platform.h"
 
+uint8_t _I2CBuffer[256];
+
+
+uint8_t _I2CWrite(VL53L7CX_Platform *p_platform, uint8_t *pData, uint32_t count) {
+    I2CMasterSlaveAddrSet(p_platform->base, p_platform->address, false);
+    for (int i = 0; i < count; i++) {
+        I2CMasterDataPut(p_platform->base, (pData + i));
+        while(I2CMasterbusy(p_platform->base)) {}
+    }
+    return SUCCESS;
+}
+
+uint8_t _I2CRead(VL53L7CX_Platform *p_platform, uint8_t *pData, uint32_t count) {
+    I2CMasterSlaveAddrSet(p_platform->base, p_platform->address, true);
+
+    for (int i = 0; i < count; i++) {
+        I2CMasterControl(p_platform->base, I2C_MASTER_CMD_SINGLE_RECEIVE);
+        pData[i] = I2CMasterDataGet(p_platform->base);
+        Delay(2);
+    }
+    return SUCCESS;
+}
+
 uint8_t VL53L7CX_RdByte(
 		VL53L7CX_Platform *p_platform,
 		uint16_t RegisterAdress,
 		uint8_t *p_value)
 {
-	uint8_t status = 255;
-	
-	/* Need to be implemented by customer. This function returns 0 if OK */
+	uint8_t status = SUCCESS;
+	_I2CBuffer[0] = RegisterAdress>>8;
+	_I2CBuffer[1] = RegisterAdress&0xFF;
+
+	status = _I2CWrite(p_platform, _I2CBuffer, 2);
+    if( status ){
+        status = FAIL;
+        goto done;
+    }
+    status = _I2CRead(p_platform, p_value, 1);
+    if (status != 0) {
+        status = FAIL;
+    }
+done:
 
 	return status;
 }
@@ -29,9 +63,16 @@ uint8_t VL53L7CX_WrByte(
 		uint16_t RegisterAdress,
 		uint8_t value)
 {
-	uint8_t status = 255;
+	uint8_t status = SUCCESS;
+	
+    _I2CBuffer[0] = RegisterAdress>>8;
+    _I2CBuffer[1] = RegisterAdress&0xFF;
+    _I2CBuffer[2] = value;
 
-	/* Need to be implemented by customer. This function returns 0 if OK */
+    status = _I2CWrite(p_platform, _I2CBuffer, 3);
+    if (status != 0) {
+        status = FAIL;
+    }
 
 	return status;
 }
@@ -42,9 +83,18 @@ uint8_t VL53L7CX_WrMulti(
 		uint8_t *p_values,
 		uint32_t size)
 {
-	uint8_t status = 255;
+	uint8_t status = SUCCESS;
 	
-		/* Need to be implemented by customer. This function returns 0 if OK */
+	if (size > sizeof(_I2CBuffer) - 1) {
+        return FAIL;
+    }
+    _I2CBuffer[0] = RegisterAdress>>8;
+    _I2CBuffer[1] = RegisterAdress&0xFF;
+    memcpy(&_I2CBuffer[2], p_values, size);
+    status = _I2CWrite(p_platform, _I2CBuffer, size + 2);
+    if (status != 0) {
+        status = FAIL;
+    }
 
 	return status;
 }
@@ -55,9 +105,20 @@ uint8_t VL53L7CX_RdMulti(
 		uint8_t *p_values,
 		uint32_t size)
 {
-	uint8_t status = 255;
+	uint8_t status = SUCCESS;
 	
-	/* Need to be implemented by customer. This function returns 0 if OK */
+	_I2CBuffer[0] = RegisterAdress>>8;
+    _I2CBuffer[1] = RegisterAdress&0xFF;
+    status = _I2CWrite(p_platform, _I2CBuffer, 2);
+    if (status != 0) {
+        status = FAIL;
+        goto done;
+    }
+    status = _I2CRead(p_platform, p_values, size);
+    if (status != 0) {
+        status = FAIL;
+    }
+done:
 	
 	return status;
 }
@@ -101,13 +162,12 @@ void VL53L7CX_SwapBuffer(
 	}
 }	
 
+/*Assuming clock is 16MHz*/
 uint8_t VL53L7CX_WaitMs(
 		VL53L7CX_Platform *p_platform,
 		uint32_t TimeMs)
 {
-	uint8_t status = 255;
-
-	/* Need to be implemented by customer. This function returns 0 if OK */
-	
-	return status;
+	(void) (p_platform);
+	for (volatile uint32_t i = DELAY_1MS * TimeMs; i > 0; i--) {}
+	return SUCCESS;
 }

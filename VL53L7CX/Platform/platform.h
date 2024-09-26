@@ -16,6 +16,17 @@
 
 #include <stdint.h>
 #include <string.h>
+#include <stdint.h>
+#include <stdbool.h>
+#include "../inc/tm4c123gh6pm.h"
+#include "../inc/hw_i2c.h"
+#include "../inc/hw_memmap.h"
+#include "../inc/hw_types.h"
+#include "../driverlib/gpio.h"
+#include "../driverlib/i2c.h"
+#include "../driverlib/pin_map.h"
+#include "../driverlib/sysctl.h"
+
 
 /**
  * @brief Structure VL53L7CX_Platform needs to be filled by the customer,
@@ -30,7 +41,8 @@ typedef struct
 	/* To be filled with customer's platform. At least an I2C address/descriptor
 	 * needs to be added */
 	/* Example for most standard platform : I2C address of sensor */
-    uint16_t  			address;
+    uint32_t 			base;
+	uint16_t  			address;
 
 } VL53L7CX_Platform;
 
@@ -67,6 +79,10 @@ typedef struct
 // #define VL53L7CX_DISABLE_REFLECTANCE_PERCENT
 // #define VL53L7CX_DISABLE_TARGET_STATUS
 // #define VL53L7CX_DISABLE_MOTION_INDICATOR
+
+#define DELAY_1MS 1350
+#define FAIL 1
+#define SUCCESS 0
 
 /**
  * @param (VL53L7CX_Platform*) p_platform : Pointer of VL53L7CX platform
@@ -163,4 +179,4 @@ uint8_t VL53L7CX_WaitMs(
 		VL53L7CX_Platform *p_platform,
 		uint32_t TimeMs);
 
-#endif	// _PLATFORM_H_
+#endif	// _PLATFORM_H
