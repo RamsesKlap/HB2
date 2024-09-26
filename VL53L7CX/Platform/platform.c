@@ -30,7 +30,7 @@ uint8_t _I2CRead(VL53L7CX_Platform *p_platform, uint8_t *pData, uint32_t count) 
     for (int i = 0; i < count; i++) {
         I2CMasterControl(p_platform->base, I2C_MASTER_CMD_SINGLE_RECEIVE);
         pData[i] = I2CMasterDataGet(p_platform->base);
-        Delay(2);
+        VL53L7CX_WaitMs(p_platform, 2);
     }
     return SUCCESS;
 }
@@ -169,5 +169,5 @@ uint8_t VL53L7CX_WaitMs(
 {
 	(void) (p_platform);
 	for (volatile uint32_t i = DELAY_1MS * TimeMs; i > 0; i--) {}
-	return SUCCESS;
+	return SUCCESS; 
 }
