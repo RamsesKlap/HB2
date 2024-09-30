@@ -41,9 +41,12 @@ typedef struct
 	/* To be filled with customer's platform. At least an I2C address/descriptor
 	 * needs to be added */
 	/* Example for most standard platform : I2C address of sensor */
-    uint32_t 			base;
+    uint32_t 			baseI2C;
 	uint16_t  			address;
 
+	// LPn
+	uint32_t			baseLPn;
+	uint32_t			pin;
 } VL53L7CX_Platform;
 
 /*

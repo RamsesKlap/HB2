@@ -10,7 +10,8 @@
 #include "../driverlib/sysctl.h"
 
 int main(void) {
-    return 0;
+    while (1) {
+    }
 }
 
 void I2CInit(void) {

@@ -16,20 +16,20 @@ uint8_t _I2CBuffer[256];
 
 
 uint8_t _I2CWrite(VL53L7CX_Platform *p_platform, uint8_t *pData, uint32_t count) {
-    I2CMasterSlaveAddrSet(p_platform->base, p_platform->address, false);
+    I2CMasterSlaveAddrSet(p_platform->baseI2C, p_platform->address, false);
     for (int i = 0; i < count; i++) {
-        I2CMasterDataPut(p_platform->base, (pData + i));
-        while(I2CMasterbusy(p_platform->base)) {}
+        I2CMasterDataPut(p_platform->baseI2C, (pData + i));
+        while(I2CMasterbusy(p_platform->baseI2C)) {}
     }
     return SUCCESS;
 }
 
 uint8_t _I2CRead(VL53L7CX_Platform *p_platform, uint8_t *pData, uint32_t count) {
-    I2CMasterSlaveAddrSet(p_platform->base, p_platform->address, true);
+    I2CMasterSlaveAddrSet(p_platform->baseI2C, p_platform->address, true);
 
     for (int i = 0; i < count; i++) {
-        I2CMasterControl(p_platform->base, I2C_MASTER_CMD_SINGLE_RECEIVE);
-        pData[i] = I2CMasterDataGet(p_platform->base);
+        I2CMasterControl(p_platform->baseI2C, I2C_MASTER_CMD_SINGLE_RECEIVE);
+        pData[i] = I2CMasterDataGet(p_platform->baseI2C);
         VL53L7CX_WaitMs(p_platform, 2);
     }
     return SUCCESS;
